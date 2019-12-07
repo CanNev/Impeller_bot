@@ -1,0 +1,25 @@
+{
+	"ret": 1,
+	"apiver": 9,
+	"appid": "me.cqp.CanNev.demo",
+	"name": "",
+	"version": "",
+	"version_id": 0,
+	"author": "",
+	"description": "",
+	"event": [
+		{
+			"name": "群消息",
+			"function": "EVENT_ON_GROUP_MSG",
+			"type": 2,
+			"priority": 20000,
+			"id": 2
+		}
+	],
+	"auth": [
+		101,
+		121
+	],
+	"menu": [],
+	"status": []
+}
