@@ -9,16 +9,48 @@
 	"description": "",
 	"event": [
 		{
+			"name": "私聊消息",
+			"function": "EVENT_ON_PRIVATE_MSG",
+			"type": 21,
+			"priority": 20000,
+			"id": 1
+		},
+		{
 			"name": "群消息",
 			"function": "EVENT_ON_GROUP_MSG",
 			"type": 2,
 			"priority": 20000,
 			"id": 2
+		},
+		{
+			"name": "加群请求／邀请",
+			"function": "EVENT_ON_GROUP_REQUEST",
+			"type": 302,
+			"priority": 20000,
+			"id": 9
+		},
+		{
+			"name": "加好友请求",
+			"function": "EVENT_ON_FRIEND_REQUEST",
+			"type": 301,
+			"priority": 20000,
+			"id": 8
+		},
+		{
+			"name": "插件启用",
+			"function": "EVENT_ON_ENABLE",
+			"type": 1003,
+			"priority": 20000,
+			"id": 1003
 		}
 	],
 	"auth": [
 		101,
-		121
+		151,
+		130,
+		160,
+		106,
+		150
 	],
 	"menu": [],
 	"status": []

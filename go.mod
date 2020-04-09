@@ -1,5 +1,5 @@
-module github.com/CanNev/Impeller_bot
+module impeller_bot
 
-go 1.13
+go 1.12
 
-require github.com/Tnze/CoolQ-Golang-SDK v0.0.0-20191020063555-dd0493defda8
+require github.com/Tnze/CoolQ-Golang-SDK v1.2.0

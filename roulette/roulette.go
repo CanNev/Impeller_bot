@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2019-11-10 20:48:56
- * @LastEditTime: 2019-11-17 10:50:10
+ * @LastEditTime: 2019-12-07 17:36:44
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: /Impeller_bot/roulette/roulette.go
@@ -15,19 +15,15 @@ import (
 	"time"
 )
 
-type Player struct {
-	QQ    int64
-	Name  string
-	Point int64
-	Life  bool
+type player struct {
+	qq        int64  //游戏用户qq
+	formGroup int64  //来自的qq群
+	name      string //昵称
+	point     int64  //积分点数,目前没有积分系统
+	life      int8   //生命值,为TDN模式设置,TNOK默认3,DB等人为1
+
 }
 
-func newPlayer(NP *Player, qq int64, name string, point int64, life bool) {
-	NP.QQ = qq
-	NP.Name = name
-	NP.Point = point
-	NP.Life = life
-}
 
 //地狱绘图的代码,因为没有深入地学习数据结构,后面需要重写
 
@@ -50,6 +46,18 @@ var GameInProgram bool
 
 //恶魔镜头
 var Demon bool
+
+func rouInput(fromGroup int64, fromQQ int64, fromAnoymous, msg string) {
+
+}
+
+func newPlayer(NP *Player, qq int64, name string, point int64, life bool) {
+	NP.QQ = qq
+	NP.Name = name
+	NP.Point = point
+	NP.Life = life
+}
+
 
 //用于异常情况下游戏重置,不过我也不清楚是否有效
 func shootInit() {

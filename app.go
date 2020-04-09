@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2019-10-29 22:09:18
- * @LastEditTime: 2019-11-19 20:35:06
+ * @LastEditTime: 2020-04-08 01:39:57
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: /Impeller_bot/app.go
@@ -9,16 +9,19 @@
 package main
 
 import (
-	"github.com/CanNev/Impeller_bot/roulette"
+	"github.com/Tnze/CoolQ-Golang-SDK/cqp"
+	"impeller_bot/bv2av"
+	"time"
+
+	// import "reflect"
+	"strings"
+
+	"encoding/json"
+	"io/ioutil"
+	"strconv"
 )
-import "github.com/Tnze/CoolQ-Golang-SDK/cqp"
 
-import "strings"
-
-import "strconv"
-import "encoding/json"
-import "io/ioutil"
-import "github.com/Tnze/CoolQ-Golang-SDK/cqp/util"
+// import "github.com/CanNev/Impeller_bot_pkg/bv2av"
 
 //go:generate cqcfg -c .
 // cqp: 名称: Impeller叶轮
@@ -35,22 +38,57 @@ func main() { /*此处应当留空*/ }
 
 func init() {
 	szm = true
-	anaNum = true
+	// anaNum = true
 	emj = 128659
 	cqp.AppID = "me.cqp.CanNev.demo" // TODO: 修改为这个插件的ID
+
+	cqp.PrivateMsg = onPrivateMsg
 	cqp.GroupMsg = onMsg
+	cqp.GroupRequest = onGroupRequest
+	cqp.FriendRequest = onFriendRequest
+	cqp.Enable = onEnable
+	// cqp.Exit = onExit
+
 }
+
+func onEnable() int32 {
+	// groupList := cqp.GetGroupList()
+	// lenList := len(groupList)
+	// i := 0
+	emg := "欧芒果(启动音)\n"
+	// for i = 0; i < lenList; i++ {
+	// 	time.Sleep(time.Second * 1)
+	// 	cqp.SendGroupMsg(groupList[i].ID, emg)
+	// }
+	cqp.SendPrivateMsg(1683941741, emg)
+	return 0
+}
+
+// func onExit() int32 {
+// 	groupList := cqp.GetGroupList()
+// 	lenList := len(groupList)
+// 	i := 0
+// 	emg := "奇酷比感激酱(关机音)"
+// 	for i = 0; i < lenList; i++ {
+// 		time.Sleep(time.Second * 1)
+// 		cqp.SendGroupMsg(groupList[i].ID, emg)
+// 	}
+// 	cqp.SendPrivateMsg(1683941741, emg)
+// 	return 0
+// }
 
 //试验场管理者身份确认,算法需要重写
 func admid(infoQQ int64) (a bool) {
 	switch infoQQ {
-	case 1683941741:
+	case 1683941741: //应天
 		a = true
-	case 1550843570:
+	case 1550843570: //水母
 		a = true
-	case 287859992:
+	case 287859992: //荧曈
 		a = true
-	case 1174652322:
+	case 1174652322: //拉菲
+		a = true
+
 		a = true
 	default:
 		a = false
@@ -64,18 +102,61 @@ func admid(infoQQ int64) (a bool) {
 // 	return
 // }
 
-func onMsg(subType, msgID int32, fromGroup int64, fromQQ int64, fromAnoymous, msg string, font int32) int32 {
+func onFriendRequest(subType int32, sendTime int32, fromQQ int64, msg string, responseFlag string) int32 {
+	return cqp.SetFriendAddRequest(responseFlag, 1, "")
+}
 
-	idcode := cqp.GetGroupMemberInfo2(fromGroup, fromQQ, false)
-	Inf, _ := util.UnpackGroupMemberInfo(idcode)
+func onGroupRequest(subType int32, sendTime int32, fromGroup int64, fromQQ int64, msg string, responseFlag string) int32 {
+	// cqp.SendPrivateMsg(1683941741, strconv.FormatInt(int64(subType), 10))
+	// cqp.SendPrivateMsg(1683941741, strconv.FormatInt(int64(sendTime), 10))
+	// cqp.SendPrivateMsg(1683941741, strconv.FormatInt(int64(fromGroup), 10))
+	// cqp.SendPrivateMsg(1683941741, strconv.FormatInt(int64(fromQQ), 10))
+	// cqp.SendPrivateMsg(1683941741, msg)
+	// cqp.SendPrivateMsg(1683941741, responseFlag)
+	// cqp.SendPrivateMsg(1683941741, "返回值:"+strconv.FormatInt(int64(qa), 10))
+	return cqp.SetGroupAddRequest(responseFlag, 2, 1, "叶轮加入完成,使用方法请输入\"叶轮帮助\"")
+}
 
-	//拳交模块,防止被tx屏蔽
-	em := "[CQ:emoji,id=" + strconv.FormatUint(emj, 10) + "]"
-	if !szm {
-		em = ""
+func onPrivateMsg(subType, msgID int32, fromQQ int64, msg string, font int32) int32 {
+
+	reMsg := ""
+	getMsg, exp := bv2av.B2afunc(msg)
+	reMsg += getMsg
+	if exp {
+		cqp.SendPrivateMsg(fromQQ, reMsg)
 	}
 
-	emx := em + em + em + em + em + em + em + em + em + em + em + em + em + em + em + em + em + em + em + "\n"
+	return 0
+}
+
+func onMsg(subType, msgID int32, fromGroup int64, fromQQ int64, fromAnoymous, msg string, font int32) int32 {
+
+	//*******************************************//
+	if fromQQ == 80000000 {
+
+		return -1
+	}
+	//********************************************//
+
+	//BV号转换功能
+	reMsg := ""
+	getMsg, exp := bv2av.B2afunc(msg)
+	reMsg += getMsg
+	if exp {
+
+		cqp.SendGroupMsg(fromGroup, reMsg)
+	}
+
+	Inf := cqp.GetGroupMemberInfo(fromGroup, fromQQ, false)
+
+	//拳交模块,防止被tx屏蔽
+	// em := "[CQ:emoji,id=" + strconv.FormatUint(emj, 10) + "]"
+	// if !szm {
+	// 	em = ""
+	// }
+
+	// emx := em + em + em + em + em + em + em + em + em + em + em + em + em + em + em + em + em + em + em + "\n"
+	emx := "  "
 	if strings.Index(msg, "叶轮统计改") != -1 {
 		anaNum = !anaNum
 		cqp.SendGroupMsg(fromGroup, emx+"用语统计计数状态改变")
@@ -94,99 +175,185 @@ func onMsg(subType, msgID int32, fromGroup int64, fromQQ int64, fromAnoymous, ms
 		cqp.SendGroupMsg(fromGroup, messAt)
 	}
 
-	//语录统计
-	if anaNum {
-		handleJ(msg, "Z:/src/github.com/CanNev/Impeller_bot/ana.json", "Z:/src/github.com/CanNev/Impeller_bot/ana.json")
-	}
+	// //语录统计
+	// if anaNum {
+	// 	handleJ(msg, "Z:/src/github.com/CanNev/Impeller_bot/ana.json", "Z:/src/github.com/CanNev/Impeller_bot/ana.json")
+	// }
 
-	//俄罗斯轮盘赌
+	if strings.Index(msg, "叶轮") != -1 {
 
-	go roulettePlay(fromGroup, fromQQ, msg, emx, Inf.Name)
+		//愚人节的小玩笑,群主有权利一键爆破群聊(迫真)
+		jokerOwner := cqp.GetGroupMemberInfo(fromGroup, fromQQ, false)
+		jokerOwnerLevel := jokerOwner.Auth
+		jokerOwnerName := jokerOwner.Name
+		if jokerOwnerLevel == 3 {
+			if strings.Index(msg, "权限确认") != -1 {
+				cqp.SendGroupMsg(fromGroup, "	检测到权限请求,身份确认中...")
+				cqp.SendGroupMsg(fromGroup, "	身份确认,<群主>"+jokerOwnerName)
+			}
+			if strings.Index(msg, "群聊爆破") != -1 {
+				cqp.SendGroupMsg(fromGroup, "	已确认来自<群主>的爆破请求,现在将开始倒计时,请私信取消指令以解除爆破请求")
+				var i int64
+				for i = 10; i > 0; i-- {
+					time.Sleep(time.Second * 2)
+					cqp.SendGroupMsg(fromGroup, "	"+strconv.FormatInt(i, 10)+"~~~")
+				}
+				cqp.SendGroupMsg(fromGroup, "  爆破请求已确认,群聊将于<24小时>内封禁,我们下个群聊再见")
+			}
+		}
+		// if strings.Index(msg, "叶轮统计信息") != -1 {
 
-	if strings.Index(msg, "叶轮统计信息") != -1 {
+		// 	aaa := yltj("Z:/src/github.com/CanNev/Impeller_bot/ana.json", "Z:/src/github.com/CanNev/Impeller_bot/ana.json")
+		// 	cqp.SendGroupMsg(fromGroup, emx+"生成JSON文件输出中")
+		// 	cqp.SendGroupMsg(fromGroup, aaa)
+		// }
+		// if strings.Index(msg, "叶轮拳交") != -1 {
+		// 	cqp.SendGroupMsg(fromGroup, emx+"拳交设置启动")
+		// 	if (strings.Index(msg, "改变")) != -1 {
+		// 		szm = !szm
+		// 		if szm {
+		// 			cqp.SendGroupMsg(fromGroup, emx+"拳交已经开启")
+		// 		} else {
+		// 			cqp.SendGroupMsg(fromGroup, emx+"拳交已经关闭")
+		// 		}
+		// 	}
+		// 	if (strings.Index(msg, "黑色高级车")) > 0 {
+		// 		emj = 128659
+		// 		cqp.SendGroupMsg(fromGroup, emx+"已经恢复黑色高级车")
+		// 	}
+		// 	if (strings.Index(msg, "UP")) > 0 {
+		// 		emj++
+		// 		cqp.SendGroupMsg(fromGroup, emx+"已经提升拳交等级")
+		// 	}
+		// 	if (strings.Index(msg, "DOWN")) > 0 {
+		// 		emj--
+		// 		cqp.SendGroupMsg(fromGroup, emx+"已经降低拳交等级")
+		// 	}
+		// }
 
-		aaa := yltj("Z:/src/github.com/CanNev/Impeller_bot/ana.json", "Z:/src/github.com/CanNev/Impeller_bot/ana.json")
-		cqp.SendGroupMsg(fromGroup, emx+"生成JSON文件输出中")
-		cqp.SendGroupMsg(fromGroup, aaa)
-	}
-	if strings.Index(msg, "叶轮拳交") != -1 {
-		cqp.SendGroupMsg(fromGroup, emx+"拳交设置启动")
-		if (strings.Index(msg, "改变")) != -1 {
-			szm = !szm
-			if szm {
-				cqp.SendGroupMsg(fromGroup, emx+"拳交已经开启")
+		if strings.Index(msg, "叶轮状态") != -1 {
+			sdu := "bot-Impeller叶轮(重建版）\n\n输入\"叶轮帮助\"获取功能列表\n\n提交bug,变态粪亲父QQ:1683941741\n\n最后更新时间2020年4月1日"
+			cqp.SendGroupMsg(fromGroup, sdu)
+		}
+		if strings.Index(msg, "叶轮帮助") != -1 {
+			sdu := "反馈BUG,变态粪亲父QQ:1683941741\n  功能列表\n1.叶轮群员信息备份\n  >群管理员可激活\n  >名称即指令\n\n2.群聊重建工具\n  >开发中\n\n3.BV号转AV号工具\n  >指令\n  \"叶轮<BVXXXXXXXXXX>\"\n或\n  BVXXX(直接粘贴BV号)\n  >请粘贴通过长按稿件获取的BV号\n  根据屑站规则,BV号为\"包含BV在内的12个字符的字符串\",且不存在l | I | O | 0字符,长度不符合规范的BV将不做应答\n4.叶轮群聊爆破  >字面意思\n  >愚人节玩笑,群主可触发"
+			cqp.SendGroupMsg(fromGroup, sdu)
+		}
+
+		/************************************************************/
+		//需要封装
+		if strings.Index(msg, "叶轮群员信息备份") != -1 {
+
+			power := false
+			QQTeamRecover := cqp.GetGroupMemberList(fromGroup)
+			msgarg := cqp.GetGroupMemberInfo(fromGroup, fromQQ, false)
+
+			power = admid(fromQQ)
+			if power {
 			} else {
-				cqp.SendGroupMsg(fromGroup, emx+"拳交已经关闭")
-			}
-		}
-		if (strings.Index(msg, "黑色高级车")) > 0 {
-			emj = 128659
-			cqp.SendGroupMsg(fromGroup, emx+"已经恢复黑色高级车")
-		}
-		if (strings.Index(msg, "UP")) > 0 {
-			emj++
-			cqp.SendGroupMsg(fromGroup, emx+"已经提升拳交等级")
-		}
-		if (strings.Index(msg, "DOWN")) > 0 {
-			emj--
-			cqp.SendGroupMsg(fromGroup, emx+"已经降低拳交等级")
-		}
-	}
-	// if szm {
-	// 	msg = "[CQ:emoji,id={128659}]"*14 + msg
-	// }
-	// if strings.HasSuffix(msg, "叶轮应答") {
-	// 	aqw := "成员信息应答反馈\n" + "应答用户: " + Inf.Name + "\n" + "QQ号码: " + strconv.FormatInt(Inf.QQ, 10) + "\n"
-	// 	cqp.SendGroupMsg(fromGroup, aqw)
-	// }
-
-	if strings.Index(msg, "叶轮状态") != -1 {
-		sdu := "自律性应答bot-Impeller叶轮-正常工作中\n提交bug,变态粪亲父QQ:1683941741\n模式选项列表\n1.俄罗斯轮盘赌(new)\n还原了古典俄罗斯轮盘的的基本玩法,输入<叶轮轮盘帮助>获得游戏玩法,欢迎相互枪毙(激寒)\n\n2.企鹅五子棋企鹅扫雷移植中\n\n叶轮最后更新时间2019年11月16日"
-		cqp.SendGroupMsg(fromGroup, emx+sdu)
-	}
-	if strings.Index(msg, "sudo ") != -1 {
-		dd := admid(Inf.QQ)
-		cqp.SendGroupMsg(fromGroup, emx+"检测到管理授权请求,确认身份中")
-		if dd {
-			cqp.SendGroupMsg(fromGroup, emx+"身份确认,<权限者>"+Inf.Name)
-			if (strings.Index(msg, "-DS")) != -1 {
-				aaa := roulette.DemonShot()
-
-				cqp.SendGroupMsg(fromGroup, emx+aaa)
+				if msgarg.Auth > 1 {
+					cqp.SendGroupMsg(fromGroup, "确认管理员身份，推送开始")
+					power = true
+				}
 			}
 
-			if (strings.Index(msg, "-a")) != -1 {
-				cqp.SendGroupMsg(fromGroup, emx+"接收到权限指令")
-				aaa := "功能设置已更新\n权限模式选项列表\n1.启动<恶魔镜头>  -DS\n警告,请确认是否有开启的必要"
-				cqp.SendGroupMsg(fromGroup, aaa)
+			if power {
+				cqp.SendPrivateMsg(fromQQ, "群"+strconv.FormatInt(fromGroup, 10)+"群员统计中")
+
+				changdu := len(QQTeamRecover) //迫真汉语拼音，因为叫length的变量太多了
+				cqp.SendPrivateMsg(fromQQ, "统计完成，该群群人数"+strconv.FormatInt(int64(changdu), 10)+"人")
+
+				covermsg0 := "当前群员列表 \n{\n"
+				covermsg1 := "(续上）\n{\n"
+				covermsg2 := "(续上）\n{\n"
+				covermsg3 := "(续上）\n{\n"
+				i := 0
+
+				if changdu < 50 {
+
+					for i = 0; i < changdu; i++ {
+						covermsg0 = covermsg0 + "\"yj" + strconv.FormatInt(int64(i), 10) + "\": [\n" + "    \"Name\": \"" + QQTeamRecover[i].Name + "\",\n    \"QQ\": \"" + strconv.FormatInt(QQTeamRecover[i].QQ, 10) + "\"\n],\n"
+					}
+					cqp.SendPrivateMsg(fromQQ, covermsg0)
+				} else if changdu < 100 {
+
+					for i = 0; i < 50; i++ {
+						covermsg0 = covermsg0 + "\"yj" + strconv.FormatInt(int64(i), 10) + "\": [\n" + "    \"Name\": \"" + QQTeamRecover[i].Name + "\",\n    \"QQ\": \"" + strconv.FormatInt(QQTeamRecover[i].QQ, 10) + "\"\n],\n"
+					}
+					for i = 50; i < changdu; i++ {
+						covermsg1 = covermsg1 + "\"yj" + strconv.FormatInt(int64(i), 10) + "\": [\n" + "    \"Name\": \"" + QQTeamRecover[i].Name + "\",\n    \"QQ\": \"" + strconv.FormatInt(QQTeamRecover[i].QQ, 10) + "\"\n],\n"
+					}
+					cqp.SendPrivateMsg(fromQQ, covermsg0)
+					cqp.SendPrivateMsg(fromQQ, covermsg1)
+				} else if changdu < 150 {
+
+					for i = 0; i < 50; i++ {
+						covermsg0 = covermsg0 + "\"yj" + strconv.FormatInt(int64(i), 10) + "\": [\n" + "    \"Name\": \"" + QQTeamRecover[i].Name + "\",\n    \"QQ\": \"" + strconv.FormatInt(QQTeamRecover[i].QQ, 10) + "\"\n],\n"
+					}
+
+					for i = 50; i < 100; i++ {
+						covermsg1 = covermsg1 + "\"yj" + strconv.FormatInt(int64(i), 10) + "\": [\n" + "    \"Name\": \"" + QQTeamRecover[i].Name + "\",\n    \"QQ\": \"" + strconv.FormatInt(QQTeamRecover[i].QQ, 10) + "\"\n],\n"
+					}
+
+					for i = 100; i < changdu; i++ {
+						covermsg2 = covermsg2 + "\"yj" + strconv.FormatInt(int64(i), 10) + "\": [\n" + "    \"Name\": \"" + QQTeamRecover[i].Name + "\",\n    \"QQ\": \"" + strconv.FormatInt(QQTeamRecover[i].QQ, 10) + "\"\n],\n"
+					}
+					cqp.SendPrivateMsg(fromQQ, covermsg0)
+					cqp.SendPrivateMsg(fromQQ, covermsg1)
+					cqp.SendPrivateMsg(fromQQ, covermsg2)
+				} else if changdu < 300 {
+					for i = 0; i < 50; i++ {
+						covermsg0 = covermsg0 + "\"yj" + strconv.FormatInt(int64(i), 10) + "\": [\n" + "    \"Name\": \"" + QQTeamRecover[i].Name + "\",\n    \"QQ\": \"" + strconv.FormatInt(QQTeamRecover[i].QQ, 10) + "\"\n],\n"
+					}
+
+					for i = 50; i < 100; i++ {
+						covermsg1 = covermsg1 + "\"yj" + strconv.FormatInt(int64(i), 10) + "\": [\n" + "    \"Name\": \"" + QQTeamRecover[i].Name + "\",\n    \"QQ\": \"" + strconv.FormatInt(QQTeamRecover[i].QQ, 10) + "\"\n],\n"
+					}
+
+					for i = 100; i < 150; i++ {
+						covermsg2 = covermsg2 + "\"yj" + strconv.FormatInt(int64(i), 10) + "\": [\n" + "    \"Name\": \"" + QQTeamRecover[i].Name + "\",\n    \"QQ\": \"" + strconv.FormatInt(QQTeamRecover[i].QQ, 10) + "\"\n],\n"
+					}
+
+					for i = 150; i < changdu; i++ {
+						covermsg3 = covermsg3 + "\"yj" + strconv.FormatInt(int64(i), 10) + "\": [\n" + "    \"Name\": \"" + QQTeamRecover[i].Name + "\",\n    \"QQ\": \"" + strconv.FormatInt(QQTeamRecover[i].QQ, 10) + "\"\n],\n"
+					}
+
+					cqp.SendPrivateMsg(fromQQ, covermsg0)
+					cqp.SendPrivateMsg(fromQQ, covermsg1)
+					cqp.SendPrivateMsg(fromQQ, covermsg2)
+					cqp.SendPrivateMsg(fromQQ, covermsg3)
+
+				} else {
+					covermsg0 = covermsg0 + "\n群员超过处理上线，当前最大支持300人"
+					cqp.SendPrivateMsg(fromQQ, covermsg0)
+				}
+			}
+		}
+		/************************************************************/
+
+		if strings.Index(msg, "叶轮权限确认") != -1 {
+			dd := admid(fromQQ)
+			cqp.SendGroupMsg(fromGroup, emx+"	检测到权限请求,身份确认中...")
+			if dd {
+				cqp.SendGroupMsg(fromGroup, emx+"身份确认,<权限者>"+Inf.Name)
+				// if (strings.Index(msg, "-DS")) != -1 {
+				// 	aaa := roulette.DemonShot()
+
+				// 	cqp.SendGroupMsg(fromGroup, emx+aaa)
+				// }
+
+				if (strings.Index(msg, "-a")) != -1 {
+					cqp.SendGroupMsg(fromGroup, emx+"接收到权限指令")
+					aaa := "功能设置已更新\n权限模式选项列表\n1.启动<恶魔镜头>  -DS\n警告,请确认是否有开启的必要"
+					cqp.SendGroupMsg(fromGroup, aaa)
+				}
+
+			} else {
+				cqp.SendGroupMsg(fromGroup, emx+"非<权限者>-"+Inf.Name+",访问拒绝")
 			}
 
-		} else {
-			cqp.SendGroupMsg(fromGroup, emx+"非<权限者>-"+Inf.Name+",访问拒绝")
 		}
-
 	}
-
-	// if strings.Index(msg, "叶轮") != -1 {
-	// 	if strings.Contains(msg, "水母祝寿") {
-	// 		switch {
-	// 		case strings.HasSuffix(msg, "01"):
-	// 			cqp.SendGroupMsg(fromGroup, emx+"祝寿筵开，画堂深映花如绣。瑞烟喷兽。帘幕香风透。一点台星，化作人间秀。韶音奏。两行红袖。齐劝长生酒。")
-	// 		case strings.HasSuffix(msg, "02"):
-	// 			cqp.SendGroupMsg(fromGroup, emx+"祝寿2庄周浪说华封祝，汉帝虚传嵩岳声。争似寿宁嘉节日，千门万户愿长生。")
-	// 		case strings.HasSuffix(msg, "03"):
-	// 			cqp.SendGroupMsg(fromGroup, emx+"祝寿3祝寿祝寿。筵开锦绣。拈起香来玉也似手。拈起盏来金也似酒。祝寿祝寿。 命比乾坤久。")
-	// 		case strings.HasSuffix(msg, "04"):
-	// 			cqp.SendGroupMsg(fromGroup, emx+"祝寿4去年会祝夫人寿。今岁也又还依旧。鬓绿与颜朱。神仙想不如。 骨相真难老。疑是居蓬岛。")
-	// 		case strings.HasSuffix(msg, "05"):
-	// 			cqp.SendGroupMsg(fromGroup, emx+"祝寿5九天宫上圣，降世共昭回。万汇须亭毓，群仙送下来。承乾当否极，庶事尽康哉。")
-	// 		case strings.HasSuffix(msg, "06"):
-	// 			cqp.SendGroupMsg(fromGroup, emx+"祝寿6帝命当敷佑，民生有厥初。千秋唐节日，万国禹朝车。韶美笙镛外，需亨饮食馀。神仙似姑射，梦想即华胥。")
-	// 		default:
-	// 		}
-	// 		cqp.SendGroupMsg(fromGroup, emx+"水母万寿无疆")
-	// 	}
-	// }
 	return 0
 }
 
@@ -248,63 +415,4 @@ func yltj(jsonFile string, outFile string) string {
 	byteValue, _ := ioutil.ReadFile(jsonFile)
 
 	return string(byteValue)
-}
-func roulettePlay(fromGroup int64, fromQQ int64, msg string, emx string, InfName string) {
-	if strings.HasPrefix(msg, "叶轮轮盘") {
-
-		//潜在的bug,外界重置会打破正常游戏
-		if strings.HasSuffix(msg, "重置") {
-
-			mess := roulette.Reset()
-			// fmt.Println(wer)
-			cqp.SendGroupMsg(fromGroup, emx+mess)
-		}
-
-		if strings.HasSuffix(msg, "帮助") {
-			text1 := roulette.Help()
-
-			cqp.SendGroupMsg(fromGroup, emx+text1)
-		}
-
-		if roulette.GameInProgram {
-			if strings.HasSuffix(msg, "开火") {
-
-				messShoot, playerTime, obqq := roulette.Shoot(fromQQ)
-				messAt := "[CQ:at,qq=" + strconv.FormatInt(obqq, 10) + "]"
-				if playerTime {
-					if roulette.Demon {
-						var subQQ int64
-						if (roulette.NowRound > 0) && (!roulette.PlayerOne.Life || !roulette.PlayerTwo.Life) {
-							if !roulette.PlayerOne.Life {
-								subQQ = roulette.PlayerOne.QQ
-							}
-							if !roulette.PlayerTwo.Life {
-								subQQ = roulette.PlayerTwo.QQ
-							}
-
-							messShoot += "<恶魔镜头>已经启动\n执行对败者的处刑\n"
-							cqp.SetGroupBan(fromGroup, subQQ, 30)
-						}
-					}
-					cqp.SendGroupMsg(fromGroup, emx+messShoot+messAt)
-				} else {
-					cqp.SendGroupMsg(fromGroup, "[CQ:at,qq="+strconv.FormatInt(fromQQ, 10)+"]"+"恁并不是当局游戏玩家或不是这个回合,请等待游戏结束,或直接重置游戏干烂当局游戏?")
-				}
-			}
-		} else {
-			if (strings.HasSuffix(msg, "新游戏")) && (roulette.Room == 0) {
-				mess := roulette.GameStart(fromQQ, InfName)
-				// fmt.Println(wer)
-				cqp.SendGroupMsg(fromGroup, emx+mess)
-			}
-			if strings.HasSuffix(msg, "-"+strconv.FormatInt(int64(roulette.Room), 10)) {
-				mess := roulette.GameJoin(fromQQ, InfName)
-				// fmt.Println(wer)
-				cqp.SendGroupMsg(fromGroup, emx+mess)
-				mess2 := roulette.SeqDisplay()
-				cqp.SendGroupMsg(fromGroup, emx+mess2)
-			}
-		}
-	}
-
 }
